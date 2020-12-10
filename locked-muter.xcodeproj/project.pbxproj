@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		DBDDB0AC25816F6100CF91D3 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBDDB0AB25816F6100CF91D3 /* main.swift */; };
+		DBDDB0B42581991800CF91D3 /* NSSound_SystemVolumeExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBDDB0B32581991800CF91D3 /* NSSound_SystemVolumeExtension.swift */; };
+		DBDDB0B92581A75B00CF91D3 /* CoreAudioKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DBDDB0B82581A75B00CF91D3 /* CoreAudioKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +27,8 @@
 /* Begin PBXFileReference section */
 		DBDDB0A825816F6100CF91D3 /* locked-muter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "locked-muter"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DBDDB0AB25816F6100CF91D3 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		DBDDB0B32581991800CF91D3 /* NSSound_SystemVolumeExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSSound_SystemVolumeExtension.swift; sourceTree = "<group>"; };
+		DBDDB0B82581A75B00CF91D3 /* CoreAudioKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudioKit.framework; path = System/Library/Frameworks/CoreAudioKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,6 +36,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DBDDB0B92581A75B00CF91D3 /* CoreAudioKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -43,6 +48,7 @@
 			children = (
 				DBDDB0AA25816F6100CF91D3 /* locked-muter */,
 				DBDDB0A925816F6100CF91D3 /* Products */,
+				DBDDB0B72581A75B00CF91D3 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -58,8 +64,17 @@
 			isa = PBXGroup;
 			children = (
 				DBDDB0AB25816F6100CF91D3 /* main.swift */,
+				DBDDB0B32581991800CF91D3 /* NSSound_SystemVolumeExtension.swift */,
 			);
 			path = "locked-muter";
+			sourceTree = "<group>";
+		};
+		DBDDB0B72581A75B00CF91D3 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				DBDDB0B82581A75B00CF91D3 /* CoreAudioKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -120,6 +135,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DBDDB0AC25816F6100CF91D3 /* main.swift in Sources */,
+				DBDDB0B42581991800CF91D3 /* NSSound_SystemVolumeExtension.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
