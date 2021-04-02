@@ -95,6 +95,58 @@ extension NSSound {
         return theAnswer
     }
 
+    public class func findOutputDeviceByName(name: String) -> AudioDeviceID {
+        var propsize:UInt32 = 0
+        var resultAudioDeviceId = kAudioObjectUnknown
+
+        var address:AudioObjectPropertyAddress = AudioObjectPropertyAddress(
+            mSelector:AudioObjectPropertySelector(kAudioHardwarePropertyDevices),
+            mScope:AudioObjectPropertyScope(kAudioObjectPropertyScopeGlobal),
+            mElement:AudioObjectPropertyElement(kAudioObjectPropertyElementMaster))
+
+        var result:OSStatus = AudioObjectGetPropertyDataSize(AudioObjectID(kAudioObjectSystemObject), &address, UInt32(MemoryLayout<AudioObjectPropertyAddress>.size), nil, &propsize)
+
+        if (result != 0) {
+            print("Error \(result) from AudioObjectGetPropertyDataSize")
+            return resultAudioDeviceId
+        }
+
+        let numDevices = Int(propsize / UInt32(MemoryLayout<AudioDeviceID>.size))
+
+        var devids = [AudioDeviceID]()
+        for _ in 0..<numDevices {
+            devids.append(AudioDeviceID())
+        }
+
+        result = AudioObjectGetPropertyData(AudioObjectID(kAudioObjectSystemObject), &address, 0, nil, &propsize, &devids);
+        if (result != 0) {
+            print("Error \(result) from AudioObjectGetPropertyData")
+            return resultAudioDeviceId
+        }
+
+        for i in 0..<numDevices {
+            let currentDeviceId = devids[i]
+
+            var addressName:AudioObjectPropertyAddress = AudioObjectPropertyAddress(
+                    mSelector:AudioObjectPropertySelector(kAudioDevicePropertyDeviceNameCFString),
+                    mScope:AudioObjectPropertyScope(kAudioObjectPropertyScopeGlobal),
+                    mElement:AudioObjectPropertyElement(kAudioObjectPropertyElementMaster))
+
+                var curName:CFString? = nil
+                var propsize:UInt32 = UInt32(MemoryLayout<CFString?>.size)
+                let result:OSStatus = AudioObjectGetPropertyData(currentDeviceId, &addressName, 0, nil, &propsize, &curName)
+                if (result != 0) {
+                    continue
+                }
+
+            if (curName as String? == name) {
+                resultAudioDeviceId = currentDeviceId
+                break
+            }
+        }
+        return resultAudioDeviceId
+    }
+
 
     //
     //    Return the system sound volume as a float in the range [0...1]
@@ -240,14 +292,23 @@ extension NSSound {
     //
     private class func systemVolumeSetMuted(_ m:Bool) {
         var defaultDevID: AudioDeviceID = kAudioObjectUnknown
+
+        defaultDevID = obtainDefaultOutputDevice()
+        deviceVolumeSetMuted(deviceId: defaultDevID, m: m)
+    }
+
+    //
+    //    IN:        deviceId to mute, (Boolean) if true the device is muted, false it is unmated
+    //    OUT:        none
+    //
+    public class func deviceVolumeSetMuted(deviceId: AudioDeviceID, m:Bool) {
         var theAddress: AudioObjectPropertyAddress
         var hasMute: Bool
         var canMute: DarwinBoolean = true
         var theError: OSStatus = noErr
         var muted: UInt32 = 0
 
-        defaultDevID = obtainDefaultOutputDevice()
-        if (defaultDevID == kAudioObjectUnknown) {
+        if (deviceId == kAudioObjectUnknown) {
             //device not found
             print("Audio device unknown")
             return
@@ -257,22 +318,20 @@ extension NSSound {
 
         muted = m ? 1 : 0
 
-        hasMute = AudioObjectHasProperty(defaultDevID, &theAddress)
+        hasMute = AudioObjectHasProperty(deviceId, &theAddress)
 
         if (hasMute)
         {
-            theError = AudioObjectIsPropertySettable(defaultDevID, &theAddress, &canMute)
+            theError = AudioObjectIsPropertySettable(deviceId, &theAddress, &canMute)
             if (theError == noErr && canMute.boolValue)
             {
-                theError = AudioObjectSetPropertyData(defaultDevID, &theAddress, 0, nil, UInt32(MemoryLayout.size(ofValue: muted)), &muted)
+                theError = AudioObjectSetPropertyData(deviceId, &theAddress, 0, nil, UInt32(MemoryLayout.size(ofValue: muted)), &muted)
                 if (theError != noErr) {
-                    print("Cannot change mute status of device 0x%0x", defaultDevID)
+                    print("Cannot change mute status of device 0x%0x", deviceId)
                 }
             }
         }
     }
-
-
 
     //
     //    IN:        (float) number of seconds during which volume is faded out to mute
@@ -305,6 +364,17 @@ extension NSSound {
     private class func getSystemVolumeIsMuted() -> Bool
     {
         var defaultDevID: AudioDeviceID = kAudioObjectUnknown
+
+        defaultDevID = obtainDefaultOutputDevice()
+        return getVolumeIsMuted(deviceId: defaultDevID)
+    }
+
+    //
+    //    IN:        AudioDeviceId
+    //    OUT:       (Bool) state of a particular audio device mute (NOTE: this is different from system volume = 0!
+    //
+    public class func getVolumeIsMuted(deviceId: AudioDeviceID) -> Bool
+    {
         var theAddress: AudioObjectPropertyAddress
         var hasMute: Bool
         var canMute: DarwinBoolean = true
@@ -312,8 +382,7 @@ extension NSSound {
         var muted: UInt32 = 0
         var mutedSize = UInt32(MemoryLayout.size(ofValue: muted))
 
-        defaultDevID = obtainDefaultOutputDevice()
-        if (defaultDevID == kAudioObjectUnknown) {
+        if (deviceId == kAudioObjectUnknown) {
             //device not found
             print("Audio device unknown")
             return false                       // works, but not the best return code for this
@@ -321,12 +390,12 @@ extension NSSound {
 
         theAddress = AudioObjectPropertyAddress.init(mSelector: kAudioDevicePropertyMute, mScope: kAudioDevicePropertyScopeOutput, mElement: kAudioObjectPropertyElementMaster)
 
-        hasMute = AudioObjectHasProperty(defaultDevID, &theAddress)
+        hasMute = AudioObjectHasProperty(deviceId, &theAddress)
 
         if (hasMute) {
-            theError = AudioObjectIsPropertySettable(defaultDevID, &theAddress, &canMute)
+            theError = AudioObjectIsPropertySettable(deviceId, &theAddress, &canMute)
             if (theError == noErr && canMute.boolValue) {
-                theError = AudioObjectGetPropertyData(defaultDevID, &theAddress, 0, nil, &mutedSize, &muted)
+                theError = AudioObjectGetPropertyData(deviceId, &theAddress, 0, nil, &mutedSize, &muted)
                 if (muted != 0) {
                     return true
                 }
@@ -334,5 +403,4 @@ extension NSSound {
         }
         return false
     }
-
 }
