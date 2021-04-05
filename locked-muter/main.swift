@@ -14,15 +14,14 @@ let notifcationCenter = DistributedNotificationCenter.default()
 
 // Used to track whether we have done the mutation
 var mutedTheVolume: Bool = false
-let macBookProSpeakerAudioDeviceId = NSSound.findOutputDeviceByName(name: "MacBook Pro Speakers")
 
 notifcationCenter.addObserver(
     forName: .init("com.apple.screenIsLocked"),
     object: nil,
     queue: .main,
     using: { not in
-        if (!NSSound.getVolumeIsMuted(deviceId: macBookProSpeakerAudioDeviceId)) {
-            NSSound.deviceVolumeSetMuted(deviceId: macBookProSpeakerAudioDeviceId, m: true)
+        if (!NSSound.getVolumeIsMuted(deviceId: NSSound.findOutputDeviceByName(name: "MacBook Pro Speakers"))) {
+            NSSound.deviceVolumeSetMuted(deviceId: NSSound.findOutputDeviceByName(name: "MacBook Pro Speakers"), m: true)
             mutedTheVolume = true
             NSLog("Muted")
         }
@@ -34,8 +33,8 @@ notifcationCenter.addObserver(
     object: nil,
     queue: .main,
     using: { not in
-        if (mutedTheVolume && NSSound.getVolumeIsMuted(deviceId: macBookProSpeakerAudioDeviceId)) {
-            NSSound.deviceVolumeSetMuted(deviceId: macBookProSpeakerAudioDeviceId, m: false)
+        if (mutedTheVolume && NSSound.getVolumeIsMuted(deviceId: NSSound.findOutputDeviceByName(name: "MacBook Pro Speakers"))) {
+            NSSound.deviceVolumeSetMuted(deviceId: NSSound.findOutputDeviceByName(name: "MacBook Pro Speakers"), m: false)
             mutedTheVolume = false
             NSLog("UnMuted")
         }
